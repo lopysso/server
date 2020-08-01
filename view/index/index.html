@@ -1,9 +1,61 @@
-<html>
-    <head>
-        
-    </head>
-    <body>
-        
-    </body>
+{{ define "index/index.html" }}
 
-</html>
+{{ template "layout/header" . }}
+<link rel="stylesheet" href="/assets/signin.css">
+<div class="container">
+
+    <form class="form-signin" onsubmit="return login();">
+        <h2 class="form-signin-heading">Please sign in</h2>
+        <label for="username" class="sr-only">Email address</label>
+        <input type="text" id="username" class="form-control" placeholder="Username" required autofocus>
+        <label for="password" class="sr-only">Password</label>
+        <input type="password" id="password" class="form-control" placeholder="Password" required>
+        <input type="hidden" id="callback" value="{{ .callbackUrl }}">
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" value="remember-me"> Remember me
+            </label>
+        </div>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+    </form>
+
+</div>
+
+<script>
+    $(function () {
+
+    })
+
+    function login() {
+
+        var username = $("#username").val();
+        var pwd = $("#password").val();
+
+        let data = {
+            username: username,
+            password: pwd
+        };
+        $.post("/signin", data, function (jsonRes) {
+            console.log(jsonRes)
+            console.log(jsonRes.code)
+            if (jsonRes.code.toString() !== "0") {
+                // show message
+                //
+                console.log(jsonRes.msg)
+                return
+            }
+
+            console.log("login success , ready to redirect")
+
+            var urlCallback = $("#callback").val();
+
+            console.log(urlCallback)
+
+            window.location = urlCallback;
+        }, "json")
+        return false;
+    }
+</script>
+
+{{ template "layout/footer" . }}
+{{ end }}

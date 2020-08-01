@@ -10,7 +10,10 @@
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}",
-            "env": {},
+            "env": {
+                "DB_HOST":"local.lopy",
+                "DB_PASSWORD":"rootpassword",
+            },
             "args": [],
             "cwd": "${workspaceFolder}/tmp"
         }
