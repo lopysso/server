@@ -78,8 +78,8 @@ func Authorize(c *gin.Context) {
 	// 哪种情况下，直接redirect，哪种情况下，让用户点击是否授权
 	// 现在，直接redirect
 	log.Printf("redirect to : %s", u.String())
-	c.String(http.StatusOK, "to do redirect: %s", u.String())
-	// c.Redirect(http.StatusMovedPermanently, u.String())
+	// c.String(http.StatusOK, "to do redirect: %s", u.String())
+	c.Redirect(http.StatusMovedPermanently, u.String())
 }
 
 // oauthQueryParams

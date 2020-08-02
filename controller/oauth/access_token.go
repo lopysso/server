@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/lopysso/server/libs/oauth/code"
+	"github.com/lopysso/server/libs/oauth/token"
 )
 
 func AccessToken(c *gin.Context) {
@@ -39,11 +40,43 @@ func AccessToken(c *gin.Context) {
 	log.Printf("code model : %+v", codeModel)
 
 	// insert access_token and refresh_token
+	tokenObj := token.New()
+
+	log.Println(tokenObj.GetRefreshToken())
+	log.Println(tokenObj.GetRefreshToken())
+	log.Println(tokenObj.GetAccessToken())
+	log.Println(tokenObj.GetAccessToken())
+	log.Println(tokenObj.GenerateAccessToken())
+	log.Println(tokenObj.GetAccessToken())
+	log.Println(tokenObj.GetAccessToken())
+
+	accessModel := token.NewAccessTokenModel()
+	accessModel.Token = tokenObj.GetAccessToken()
+	accessModel.UserId = codeModel.UserId
+	accessModel.Scope = codeModel.Scope
+
+	refreshModel := token.NewRefreshTokenModel()
+	refreshModel.TokenAccess = tokenObj.GetAccessToken()
+	refreshModel.TokenRefresh = tokenObj.GetRefreshToken()
+
+	err = token.InsertTokens(&accessModel, &refreshModel)
+	if err != nil {
+		jsonRes["msg"] = err.Error()
+		c.JSON(http.StatusOK, jsonRes)
+		return
+	}
 
 	//
 
 	jsonRes["code"] = "0"
 	jsonRes["msg"] = "ok"
+	jsonRes["data"] = gin.H{
+		"access_token":  refreshModel.TokenAccess,
+		"token_type":    "",
+		"expires_in":    7200,
+		"refresh_token": refreshModel.TokenRefresh,
+	}
+
 	c.JSON(200, jsonRes)
 
 	// c.String(http.StatusOK, "hehe %+v",query)
