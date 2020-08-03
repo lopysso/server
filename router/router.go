@@ -1,12 +1,11 @@
 package router
 
 import (
-	"log"
-
 	"github.com/gin-gonic/gin"
 	"github.com/lopysso/server/controller/index"
 	"github.com/lopysso/server/controller/oauth"
-	"github.com/lopysso/server/libs/account"
+	oauthApi "github.com/lopysso/server/controller/oauth/api"
+	"github.com/lopysso/server/controller/user"
 )
 
 // NewRouter 生成默认路由
@@ -21,6 +20,9 @@ func NewRouter() *gin.Engine {
 	// 这个位置要注意
 	routerDefault.LoadHTMLGlob("../view/**/*")
 
+	routerDefault.Use(func(c *gin.Context) {
+		c.Header("Pragma", "no-cache")
+	})
 	// login
 	routerDefault.GET("/", index.HomeAction)
 	routerDefault.POST("/signin", index.SigninAction)
@@ -30,34 +32,19 @@ func NewRouter() *gin.Engine {
 
 	// })
 
-	oauthRouter := routerDefault.Group("/oauth", func(c *gin.Context) {
-		log.Println("hello oauth start")
-		token, err := c.Cookie("authorize_token")
-		if err != nil {
-			c.Redirect(302, "/")
-			log.Println("wheratasfasdfaslkdfjasdfasodfjoasdjfasdf")
-		}
+	//
 
-		// token
-		mo,err := account.GetFromToken(token)
-		if err != nil {
-			c.Redirect(302, "/")
-			log.Println("wheratasfasdfaslkdfjasdfasodfjoasdjfasdf")
-		}
-
-		c.Set("userInfo", mo)
-
-
-
-		// find user info
-
-		c.Next()
-		log.Println("hello oauth end")
-	})
-	oauthRouter.GET("/authorize", oauth.Authorize)
+	routerDefault.GET("/oauth/authorize", user.Middleware, user.Authorize)
 
 	//
-	routerDefault.GET("/oauth2/access_token", oauth.AccessToken)
+	routerDefault.GET("/oauth/access_token", oauth.AccessToken)
+
+	// oauth api
+	oauthApiRouter := routerDefault.Group("/oauth/api")
+	oauthApiRouter.Use(oauthApi.Middleware)
+	{
+		oauthApiRouter.GET("/userinfo", oauthApi.Userinfo)
+	}
 
 	return routerDefault
 }

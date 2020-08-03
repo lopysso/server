@@ -9,7 +9,7 @@ import (
 
 type Model struct {
 	Id        int
-	CreatedAt time.Time `db:"created_at" time_format:"sql_datetime" time_location:"UTC"`
+	CreatedAt time.Time `db:"created_at" time_format:"sql_datetime" time_location:"Local"`
 	// CreatedAt time.Time `db:"created_at"`
 	Appid   int64
 	Secret  string

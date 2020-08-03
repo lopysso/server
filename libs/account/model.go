@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/lopysso/server/dependency_injection"
 )
@@ -19,30 +20,48 @@ const StatusDelete = "DELETE"
 
 // Model 用户信息
 type Model struct {
-	ID       int64
-	Username string
-	Password string
-	Salt     string
-	Status   string
+	ID        int64
+	CreatedAt time.Time `db:"created_at" time_format:"sql_datetime" time_location:"Local"`
+	Nickname  string
+	Username  string
+	Password  string
+	Salt      string
+	Status    string
 }
 
-// CreateToken 生成token
+// CreateSessionToken 生成token
 //
 // 暂时这么搞
-func (p *Model) CreateToken() string {
+func (p *Model) CreateSessionToken() string {
 
 	return fmt.Sprintf("%s::%s", p.Username, p.Password)
 }
 
-// GetFromDb 从数据库取model
-func GetFromDb(username string) (*Model, error) {
+// GetFromUsername 从数据库取model
+func GetFromID(id int64) (*Model, error) {
+	mo := Model{}
+	db := dependency_injection.InjectMysql()
+
+	// var rowUsername,rowPassword,rowID,rowSalt string
+	userRow := db.QueryRow("select id,created_at,nickname,username,password,salt,status from user where id=?", id)
+
+	err := userRow.Scan(&mo.ID, &mo.CreatedAt, &mo.Nickname, &mo.Username, &mo.Password, &mo.Salt, &mo.Status)
+	if err != nil {
+		return nil, err
+	}
+
+	return &mo, err
+}
+
+// GetFromUsername 从数据库取model
+func GetFromUsername(username string) (*Model, error) {
 	mo := Model{}
 	db := dependency_injection.InjectMysql()
 
 	// var rowUsername,rowPassword,rowID,rowSalt string
 	userRow := db.QueryRow("select id,username,password,salt,status from user where username=?", username)
 
-	err := userRow.Scan(&mo.ID, &mo.Username, &mo.Password, &mo.Salt, &mo.Status)
+	err := userRow.Scan(&mo.ID, &mo.CreatedAt, &mo.Nickname, &mo.Username, &mo.Password, &mo.Salt, &mo.Status)
 	// err := userRow.Scan(mo.ID,mo.Username,mo.Password,mo.Salt,mo.Status)
 	// err := userRow.Scan(mo)
 	if err != nil {
@@ -55,7 +74,7 @@ func GetFromDb(username string) (*Model, error) {
 // GetWithPassword 从数据库中获取model
 func GetWithPassword(username string, password string) (*Model, error) {
 
-	mo, err := GetFromDb(username)
+	mo, err := GetFromUsername(username)
 	if err != nil {
 		return nil, err
 	}
@@ -68,15 +87,15 @@ func GetWithPassword(username string, password string) (*Model, error) {
 	return mo, nil
 }
 
-// GetFromToken 从token 中取model
-func GetFromToken(token string) (*Model, error) {
+// GetFromSessionToken 从session 中取model
+func GetFromSessionToken(token string) (*Model, error) {
 
 	userArr := strings.Split(token, "::")
 	if len(userArr) != 2 {
 		return nil, errors.New("token error")
 	}
 
-	mo, err := GetFromDb(userArr[0])
+	mo, err := GetFromUsername(userArr[0])
 	if err != nil {
 		return nil, err
 	}

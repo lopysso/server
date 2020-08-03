@@ -10,31 +10,6 @@ import (
 	"github.com/lopysso/server/dependency_injection"
 )
 
-type Generator struct {
-	accessToken string
-
-	refreshToken string
-}
-
-func (p *Generator) GetAccessToken() string {
-	return p.accessToken
-}
-
-func (p *Generator) GetRefreshToken() string {
-	return p.refreshToken
-}
-
-func (p *Generator) GenerateAccessToken() string {
-	flakeNode := dependency_injection.InjectSnowflakeNode()
-
-	num := flakeNode.Generate()
-
-	str := fmt.Sprintf("%s:::%d", num.Base32(), num.Int64())
-
-	p.accessToken = hashAccessToken(str)
-	return p.accessToken
-}
-
 func generateRefreshToken() string {
 	flakeNode := dependency_injection.InjectSnowflakeNode()
 
@@ -45,13 +20,14 @@ func generateRefreshToken() string {
 	return hashRefreshToken(str)
 }
 
-func New() *Generator {
-	a := Generator{}
+func generateAccessToken() string {
+	flakeNode := dependency_injection.InjectSnowflakeNode()
 
-	a.refreshToken = generateRefreshToken()
-	a.GenerateAccessToken()
+	num := flakeNode.Generate()
 
-	return &a
+	str := fmt.Sprintf("%s:::%d", num.Base32(), num.Int64())
+
+	return hashAccessToken(str)
 }
 
 func hashRefreshToken(str string) string {

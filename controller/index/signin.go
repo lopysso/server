@@ -51,7 +51,7 @@ func SigninAction(c *gin.Context) {
 	log.Println(userModel)
 
 	// 暂时不用token， 先这么搞 username::password
-	c.SetCookie("authorize_token", userModel.CreateToken(), 99999999, "/", "", false, true)
+	c.SetCookie("authorize_token", userModel.CreateSessionToken(), 99999999, "/", "", false, true)
 
 	jsonRes["code"] = "0"
 	jsonRes["msg"] = "login ok"

@@ -1,4 +1,4 @@
-package oauth
+package user
 
 import (
 	"fmt"
@@ -12,6 +12,17 @@ import (
 	"github.com/lopysso/server/libs/oauth/app"
 	"github.com/lopysso/server/libs/oauth/code"
 )
+
+// "fmt"
+// "log"
+// "net/http"
+// "net/url"
+
+// "github.com/gin-gonic/gin"
+// "github.com/go-playground/validator/v10"
+// "github.com/lopysso/server/libs/account"
+// "github.com/lopysso/server/libs/oauth/app"
+// "github.com/lopysso/server/libs/oauth/code"
 
 // Authorize 用创建授权码code
 //

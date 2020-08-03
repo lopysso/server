@@ -39,27 +39,11 @@ func AccessToken(c *gin.Context) {
 
 	log.Printf("code model : %+v", codeModel)
 
-	// insert access_token and refresh_token
-	tokenObj := token.New()
+	refreshModel := token.NewRefresh()
+	refreshModel.Scope = codeModel.Scope
+	refreshModel.UserId = codeModel.UserId
 
-	log.Println(tokenObj.GetRefreshToken())
-	log.Println(tokenObj.GetRefreshToken())
-	log.Println(tokenObj.GetAccessToken())
-	log.Println(tokenObj.GetAccessToken())
-	log.Println(tokenObj.GenerateAccessToken())
-	log.Println(tokenObj.GetAccessToken())
-	log.Println(tokenObj.GetAccessToken())
-
-	accessModel := token.NewAccessTokenModel()
-	accessModel.Token = tokenObj.GetAccessToken()
-	accessModel.UserId = codeModel.UserId
-	accessModel.Scope = codeModel.Scope
-
-	refreshModel := token.NewRefreshTokenModel()
-	refreshModel.TokenAccess = tokenObj.GetAccessToken()
-	refreshModel.TokenRefresh = tokenObj.GetRefreshToken()
-
-	err = token.InsertTokens(&accessModel, &refreshModel)
+	accessTokenModle, err := refreshModel.InsertToDb()
 	if err != nil {
 		jsonRes["msg"] = err.Error()
 		c.JSON(http.StatusOK, jsonRes)
@@ -73,7 +57,7 @@ func AccessToken(c *gin.Context) {
 	jsonRes["data"] = gin.H{
 		"access_token":  refreshModel.TokenAccess,
 		"token_type":    "",
-		"expires_in":    7200,
+		"expires_in":    accessTokenModle.GetExpireIn(),
 		"refresh_token": refreshModel.TokenRefresh,
 	}
 
