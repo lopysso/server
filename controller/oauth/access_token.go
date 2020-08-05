@@ -1,39 +1,40 @@
 package oauth
 
 import (
-	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
+	"github.com/lopysso/server/controller"
+	"github.com/lopysso/server/libs/oauth/app"
 	"github.com/lopysso/server/libs/oauth/code"
 	"github.com/lopysso/server/libs/oauth/token"
 )
 
 func AccessToken(c *gin.Context) {
 
-	jsonRes := gin.H{
-		"http": "true",
-		"code": "1",
-		"msg":  "",
-		"data": nil,
-	}
+	jsonRes := controller.NewJsonRes()
 
-	query := queryParams{}
+	query := accessQueryParams{}
 	err := c.ShouldBindQuery(&query)
 
 	if err != nil {
-		jsonRes["msg"] = query.getError(err.(validator.ValidationErrors))
-		c.JSON(http.StatusOK, jsonRes)
+		c.JSON(http.StatusOK, jsonRes.Error(controller.GetValidationError(err)).Generate())
+		return
+	}
+
+	// check appid and secret
+	_, err = app.GetFromAppidWithSecret(query.Appid, query.Secret)
+	if err != nil {
+		c.JSON(http.StatusOK, jsonRes.Error("can not use this code").Generate())
 		return
 	}
 
 	// get and delete code, trans
 	codeModel, err := code.GetAndDelete(query.Code)
 	if err != nil {
-		jsonRes["msg"] = err.Error()
-		c.JSON(http.StatusOK, jsonRes)
+		c.JSON(http.StatusOK, jsonRes.Error(err.Error()).Generate())
 		return
 	}
 
@@ -42,50 +43,38 @@ func AccessToken(c *gin.Context) {
 	refreshModel := token.NewRefresh()
 	refreshModel.Scope = codeModel.Scope
 	refreshModel.UserId = codeModel.UserId
+	refreshModel.Appid = codeModel.Appid
 
 	accessTokenModle, err := refreshModel.InsertToDb()
 	if err != nil {
-		jsonRes["msg"] = err.Error()
-		c.JSON(http.StatusOK, jsonRes)
+		c.JSON(http.StatusOK, jsonRes.Error(err.Error()).Generate())
 		return
 	}
 
 	//
 
-	jsonRes["code"] = "0"
-	jsonRes["msg"] = "ok"
-	jsonRes["data"] = gin.H{
+	jsonRes.Success().Data(gin.H{
 		"access_token":  refreshModel.TokenAccess,
 		"token_type":    "",
 		"expires_in":    accessTokenModle.GetExpireIn(),
 		"refresh_token": refreshModel.TokenRefresh,
-	}
-
-	c.JSON(200, jsonRes)
+	})
+	c.JSON(200, jsonRes.Generate())
 
 	// c.String(http.StatusOK, "hehe %+v",query)
 }
 
 const AuthorizationCode = "authorization_code"
 
-type queryParams struct {
-	Appid     string `form:"appid" binding:"required,alphanum"`
+type accessQueryParams struct {
+	Appid     string `form:"appid" binding:"required,SnowflakeInt64"`
 	Secret    string `form:"secret" binding:"required,alphanum"`
 	Code      string `form:"code" binding:"required,alphanum"`
 	GrantType string `form:"grant_type" binding:"required"`
 }
 
-func (r *queryParams) getError(err validator.ValidationErrors) string {
+func (p *accessQueryParams) AppidInt() int64 {
+	a, _ := strconv.ParseInt(p.Appid, 10, 64)
 
-	for _, v := range err {
-		log.Println(v.Field(), v.Tag())
-		//return "error test"
-		errMsg := "格式错误"
-		if v.Tag() == "required" {
-			errMsg = "不能为空"
-		}
-		return fmt.Sprintf("%s %s", v.Field(), errMsg)
-	}
-
-	return "unknown error"
+	return a
 }

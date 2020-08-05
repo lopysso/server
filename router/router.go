@@ -38,6 +38,7 @@ func NewRouter() *gin.Engine {
 
 	//
 	routerDefault.GET("/oauth/access_token", oauth.AccessToken)
+	routerDefault.GET("/oauth/refresh_token", oauth.RefreshTokenAction)
 
 	// oauth api
 	oauthApiRouter := routerDefault.Group("/oauth/api")
@@ -45,6 +46,14 @@ func NewRouter() *gin.Engine {
 	{
 		oauthApiRouter.GET("/userinfo", oauthApi.Userinfo)
 	}
+
+	//
+	userRouter := routerDefault.Group("/user")
+	userRouter.Use(user.Middleware)
+	{
+		userRouter.GET("/", user.HomeAction)
+	}
+	// userRouter :=routerDefault.GET("/user/", user.Middleware, user.HomeAction)
 
 	return routerDefault
 }

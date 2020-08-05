@@ -1,6 +1,11 @@
 package controller
 
-import "github.com/gin-gonic/gin"
+import (
+	"fmt"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+)
 
 type JsonRes struct {
 	http bool
@@ -50,4 +55,23 @@ func (p *JsonRes) Generate() gin.H {
 		"msg":  p.msg,
 		"data": p.data,
 	}
+}
+
+func GetValidationError(err error) string {
+
+	vErr, ok := err.(validator.ValidationErrors)
+	if !ok {
+		return "server error: error type invalid"
+	}
+
+	for _, v := range vErr {
+		//return "error test"
+		errMsg := "格式错误"
+		if v.Tag() == "required" {
+			errMsg = "不能为空"
+		}
+		return fmt.Sprintf("%s %s", v.Field(), errMsg)
+	}
+
+	return "unknown error"
 }

@@ -10,10 +10,9 @@ import (
 const tableName = "oauth_code"
 
 type Model struct {
-	Code      string    `db:"code"`
-	CreatedAt time.Time `db:"created_at" time_format:"sql_datetime" time_location:"Local"`
-	// CreatedAt   time.Time `db:"created_at" `
-	Appid       int64     `db:"appid"`
+	Code        string    `db:"code"`
+	CreatedAt   time.Time `db:"created_at" time_format:"sql_datetime" time_location:"Local"`
+	Appid       string    `db:"appid"`
 	RedirectUri string    `db:"redirect_uri"`
 	ExpireAt    time.Time `db:"expire_at" time_format:"sql_datetime" time_location:"LOCAL"`
 	Scope       string    `db:"scope"`

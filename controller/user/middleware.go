@@ -29,5 +29,4 @@ func Middleware(c *gin.Context) {
 	// find user info
 
 	c.Next()
-	log.Println("hello oauth end")
 }

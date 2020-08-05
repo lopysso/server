@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"log"
 	"time"
 
@@ -10,12 +11,11 @@ import (
 type Model struct {
 	Id        int
 	CreatedAt time.Time `db:"created_at" time_format:"sql_datetime" time_location:"Local"`
-	// CreatedAt time.Time `db:"created_at"`
-	Appid   int64
-	Secret  string
-	Title   string
-	Desp    string
-	Domains string
+	Appid     string
+	Secret    string
+	Title     string
+	Desp      string
+	Domains   string
 }
 
 func GetFromAppid(appid string) (*Model, error) {
@@ -38,4 +38,18 @@ func GetFromAppid(appid string) (*Model, error) {
 	}
 
 	return &model, nil
+}
+
+func GetFromAppidWithSecret(appid string, secret string) (*Model, error) {
+	m, err := GetFromAppid(appid)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if m.Secret != secret {
+		return nil, errors.New("app secret error")
+	}
+
+	return m, nil
 }

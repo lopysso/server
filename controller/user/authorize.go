@@ -1,13 +1,12 @@
 package user
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
+	"github.com/lopysso/server/controller"
 	"github.com/lopysso/server/libs/account"
 	"github.com/lopysso/server/libs/oauth/app"
 	"github.com/lopysso/server/libs/oauth/code"
@@ -35,7 +34,7 @@ func Authorize(c *gin.Context) {
 	err := c.ShouldBindQuery(&query)
 	if err != nil {
 
-		c.String(http.StatusOK, "authorize error, %+v", query.getError(err.(validator.ValidationErrors)))
+		c.String(http.StatusOK, "authorize error, %+v", controller.GetValidationError(err))
 		return
 	}
 
@@ -97,24 +96,9 @@ func Authorize(c *gin.Context) {
 //
 // 后续自己写一些验证器
 type oauthQueryParams struct {
-	Appid        string `form:"appid" binding:"required,number,min=19,max=19"`
+	Appid        string `form:"appid" binding:"required,SnowflakeInt64"`
 	ResponseType string `form:"response_type" binding:"required"`
 	RedirectUri  string `form:"redirect_uri" binding:"required"`
 	Scope        string `form:"scope"`
 	State        string `form:"state"`
-}
-
-func (r *oauthQueryParams) getError(err validator.ValidationErrors) string {
-
-	for _, v := range err {
-		log.Println(v.Field(), v.Tag())
-		//return "error test"
-		errMsg := "格式错误"
-		if v.Tag() == "required" {
-			errMsg = "不能为空"
-		}
-		return fmt.Sprintf("%s %s", v.Field(), errMsg)
-	}
-
-	return "unknown error"
 }

@@ -59,7 +59,7 @@ func GetFromUsername(username string) (*Model, error) {
 	db := dependency_injection.InjectMysql()
 
 	// var rowUsername,rowPassword,rowID,rowSalt string
-	userRow := db.QueryRow("select id,username,password,salt,status from user where username=?", username)
+	userRow := db.QueryRow("select id,created_at,nickname,username,password,salt,status from user where username=?", username)
 
 	err := userRow.Scan(&mo.ID, &mo.CreatedAt, &mo.Nickname, &mo.Username, &mo.Password, &mo.Salt, &mo.Status)
 	// err := userRow.Scan(mo.ID,mo.Username,mo.Password,mo.Salt,mo.Status)
