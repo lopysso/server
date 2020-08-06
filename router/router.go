@@ -52,6 +52,8 @@ func NewRouter() *gin.Engine {
 	userRouter.Use(user.Middleware)
 	{
 		userRouter.GET("/", user.HomeAction)
+		userRouter.GET("/password", user.PasswordAction)
+		userRouter.POST("/password", user.PasswordUpdateAction)
 	}
 	// userRouter :=routerDefault.GET("/user/", user.Middleware, user.HomeAction)
 

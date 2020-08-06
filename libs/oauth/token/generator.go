@@ -3,11 +3,10 @@ package token
 import (
 	"crypto/sha256"
 	"fmt"
-	"math/rand"
-	"time"
 
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/lopysso/server/dependency_injection"
+	"github.com/lopysso/server/libs/text/random"
 )
 
 func generateRefreshToken() string {
@@ -55,12 +54,13 @@ func hashAccessToken(str string) string {
 }
 
 func randomString(l int) string {
-	str := "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
-	bytes := []byte(str)
-	result := []byte{}
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	for i := 0; i < l; i++ {
-		result = append(result, bytes[r.Intn(len(bytes))])
-	}
-	return string(result)
+	return random.Base58(l)
+	// str := "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
+	// bytes := []byte(str)
+	// result := []byte{}
+	// r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	// for i := 0; i < l; i++ {
+	// 	result = append(result, bytes[r.Intn(len(bytes))])
+	// }
+	// return string(result)
 }

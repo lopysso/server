@@ -107,3 +107,28 @@ func GetFromSessionToken(token string) (*Model, error) {
 
 	return mo, nil
 }
+
+func (p *Model) ChangePassword(oldPassword string, newPassword string) error {
+	if p.ID <= 0 {
+		return errors.New("server error: no this user")
+	}
+	if HashPwd(oldPassword, p.Salt) != p.Password {
+		return errors.New("old password error")
+	}
+
+	//
+	newSalt := CreateSalt(8)
+	newHash := HashPwd(newPassword, newSalt)
+
+	db := dependency_injection.InjectMysql()
+	_, err := db.Exec("update user set password=?,salt=? where id=?", newHash, newSalt, p.ID)
+	if err != nil {
+		return errors.New("password changed error")
+	}
+
+	p.Password = newHash
+	p.Salt = newSalt
+
+	return nil
+
+}

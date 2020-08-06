@@ -4,6 +4,8 @@ import (
 	"crypto/md5"
 	"crypto/sha1"
 	"fmt"
+
+	"github.com/lopysso/server/libs/text/random"
 )
 
 // var base58Alphabets = []byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz")
@@ -36,5 +38,5 @@ func HashPwdFromMd5(passwordMd5 string, salt string) string {
 // CreateSalt 找一个随机算法
 func CreateSalt(length int) string {
 
-	return "hello"
+	return random.Base58(length)
 }
